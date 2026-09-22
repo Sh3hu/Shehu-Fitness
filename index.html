@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#171717"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-capable" content="yes"><link rel="manifest" href="manifest.webmanifest">
+<title>Shehu Fitness</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f7;color:#171717}
+header{background:#171717;color:white;padding:20px}
+main{max-width:900px;margin:auto;padding:16px}
+.card{background:white;border-radius:14px;padding:16px;margin:12px 0;box-shadow:0 2px 8px #0001}
+button{border:0;border-radius:10px;padding:10px 14px;margin:4px;background:#171717;color:white;font-weight:600}
+button.secondary{background:#e7e7e7;color:#111}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px}
+.exercise{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #eee}
+.exercise input[type=checkbox]{width:20px;height:20px}
+.exercise input[type=number]{width:65px;padding:7px;border:1px solid #ccc;border-radius:7px}
+.timer{font-size:40px;font-weight:800;text-align:center;margin:12px}
+.small{color:#666;font-size:14px}
+.done{text-decoration:line-through;color:#777}
+</style>
+</head>
+<body>
+<header><h1>🏋️ Shehu Fitness</h1><div>Monday–Saturday • 6:00–8:00 PM</div></header>
+<main>
+<div class="card"><h2 id="dayTitle"></h2><div class="grid" id="days"></div></div>
+<div class="card">
+<h2>⏱️ Workout Timer</h2><div class="timer" id="timer">02:00</div>
+<div style="text-align:center"><button onclick="startTimer()">Start</button><button class="secondary" onclick="resetTimer()">Reset</button></div>
+<div class="small" style="text-align:center">Use for your 2-minute breaks.</div>
+</div>
+<div class="card"><h2>Exercises</h2><div id="routine"></div></div>
+<div class="card"><h2>📊 Progress</h2><p id="progress"></p><button class="secondary" onclick="clearDay()">Clear today's checks</button></div>
+</main>
+<script>
+const plans={
+Monday:{focus:"Lower Body",ex:["Leg Press","Leg Extension","Leg Curl","Goblet Squat","Calf Raise","Deadlift"]},
+Tuesday:{focus:"Upper Body",ex:["Lat Pulldown","Bench Press","Shoulder Press","Lateral Raise","Biceps Curl","Triceps Pushdown"]},
+Wednesday:{focus:"Back + Rear Shoulders",ex:["Pull-ups","Lat Pulldown","Straight-Arm Cable Pulldown","Face Pulls","Dumbbell Rear-Delt Raises","Dumbbell Pullover"]},
+Thursday:{focus:"Lower Body",ex:["Leg Press","Romanian Deadlift","Leg Curl","Leg Extension","Hip Thrust","Calf Raise"]},
+Friday:{focus:"Upper Body",ex:["Lat Pulldown","Bench Press","Dumbbell Pullover","Lateral Raise","Biceps Curl","Triceps Pushdown"]},
+Saturday:{focus:"Full Body",ex:["Leg Press","Bench Press","Lat Pulldown","Shoulder Press","Biceps Curl","Triceps Pushdown"]},
+Sunday:{focus:"Rest",ex:[]}
+};
+const key="gymTracker"; let data=JSON.parse(localStorage.getItem(key)||"{}");
+let selected=new Date().toLocaleDateString("en-US",{weekday:"long"});
+if(!plans[selected]||selected==="Sunday") selected="Monday";
+function save(){localStorage.setItem(key,JSON.stringify(data));}
+function render(){
+ document.getElementById("dayTitle").textContent=selected+" — "+plans[selected].focus;
+ document.getElementById("days").innerHTML=Object.keys(plans).filter(d=>d!=="Sunday").map(d=>`<button class="${d===selected?'':'secondary'}" onclick="selected='${d}';render()">${d}</button>`).join("");
+ const p=plans[selected], checks=data[selected]||[];
+ document.getElementById("routine").innerHTML=p.ex.map((e,i)=>`<div class="exercise ${checks[i]?'done':''}">
+ <input type="checkbox" ${checks[i]?'checked':''} onchange="toggle(${i})"><b>${i+1}. ${e}</b>
+ <span style="margin-left:auto">Sets <input type="number" min="0" placeholder="3" onchange="log('${e}','sets',this.value)"> Reps <input type="number" min="0" placeholder="10" onchange="log('${e}','reps',this.value)"></span></div>`).join("");
+ let n=checks.filter(Boolean).length; document.getElementById("progress").textContent=`${n}/${p.ex.length} exercises completed today.`;
+}
+function toggle(i){data[selected]??=[];data[selected][i]=!data[selected][i];save();render()}
+function log(e,k,v){data.logs??={};data.logs[e]??={};data.logs[e][k]=v;save()}
+function clearDay(){delete data[selected];save();render()}
+let remaining=120,interval=null;
+function show(){document.getElementById("timer").textContent=`${String(Math.floor(remaining/60)).padStart(2,"0")}:${String(remaining%60).padStart(2,"0")}`}
+function startTimer(){if(interval)return;interval=setInterval(()=>{remaining--;show();if(remaining<=0){clearInterval(interval);interval=null;alert("Break finished!");remaining=120;show()}},1000)}
+function resetTimer(){clearInterval(interval);interval=null;remaining=120;show()}
+render();show();
+</script>
+<script>if ("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");</script></body></html>
