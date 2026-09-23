@@ -367,7 +367,7 @@ function render(){
   document.getElementById("routine").innerHTML=
     plan.ex.map((exercise,i)=>{
 
-      const item=workout[i]||{};
+      const item=workout[i]||data.base?.[selected]?.[i]||{};
 
       return`
 
@@ -450,6 +450,7 @@ function toggleExercise(i){
   render();
 }
 
+  
 
 /* LOG SETS / REPS / WEIGHT */
 
@@ -462,12 +463,23 @@ function logExercise(i,keyName,value){
   data[selected][i][keyName]=
     Number(value)||0;
 
+  /* Save latest value as the new base value */
+  data.base??={};
+
+  data.base[selected]??={};
+
+  data.base[selected][i]??={};
+
+  data.base[selected][i][keyName]=
+    Number(value)||0;
+
   save();
 
   updateStats();
 
   renderHistory();
 }
+  
 
 
 /* STATISTICS */
