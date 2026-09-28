@@ -14,23 +14,23 @@ body{
   font-family:system-ui,sans-serif;
   margin:0;
   background:#f4f5f7;
-  color:#171717
+  color:#171717;
 }
 
 header{
   background:#171717;
   color:white;
-  padding:20px
+  padding:20px;
 }
 
 header h1{
-  margin:0 0 6px
+  margin:0 0 6px;
 }
 
 main{
   max-width:900px;
   margin:auto;
-  padding:16px
+  padding:16px;
 }
 
 .card{
@@ -38,7 +38,7 @@ main{
   border-radius:14px;
   padding:16px;
   margin:12px 0;
-  box-shadow:0 2px 8px #0001
+  box-shadow:0 2px 8px #0001;
 }
 
 button{
@@ -48,46 +48,46 @@ button{
   margin:4px;
   background:#171717;
   color:white;
-  font-weight:600
+  font-weight:600;
 }
 
 button.secondary{
   background:#e7e7e7;
-  color:#111
+  color:#111;
 }
 
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
-  gap:8px
+  gap:8px;
 }
 
 .exercise{
   padding:14px 0;
-  border-bottom:1px solid #eee
+  border-bottom:1px solid #eee;
 }
 
 .exercise-top{
   display:flex;
   align-items:center;
-  gap:10px
+  gap:10px;
 }
 
 .exercise input[type=checkbox]{
   width:20px;
-  height:20px
+  height:20px;
 }
 
 .inputs{
   display:grid;
   grid-template-columns:1fr 1fr 1fr;
   gap:8px;
-  margin-top:10px
+  margin-top:10px;
 }
 
 .inputs label{
   font-size:12px;
-  color:#666
+  color:#666;
 }
 
 .inputs input{
@@ -96,56 +96,62 @@ button.secondary{
   padding:8px;
   border:1px solid #ccc;
   border-radius:7px;
-  margin-top:3px
+  margin-top:3px;
 }
 
 .done{
   text-decoration:line-through;
-  color:#777
+  color:#777;
 }
 
 .timer{
   font-size:40px;
   font-weight:800;
   text-align:center;
-  margin:12px
+  margin:12px;
 }
 
 .small{
   color:#666;
-  font-size:14px
+  font-size:14px;
 }
 
 .stats{
   display:grid;
   grid-template-columns:repeat(3,1fr);
   gap:8px;
-  text-align:center
+  text-align:center;
 }
 
 .stat{
   background:#f4f5f7;
   padding:12px 5px;
-  border-radius:10px
+  border-radius:10px;
 }
 
 .stat strong{
   display:block;
-  font-size:24px
+  font-size:24px;
 }
 
 .history-item{
   padding:10px 0;
-  border-bottom:1px solid #eee
+  border-bottom:1px solid #eee;
+}
+
+.previous{
+  margin-top:6px;
+  font-size:12px;
+  color:#666;
 }
 
 @media(max-width:500px){
   .inputs{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 
   .stats{
-    grid-template-columns:1fr 1fr
+    grid-template-columns:1fr 1fr;
   }
 }
 </style>
@@ -193,6 +199,7 @@ button.secondary{
   <h2>📊 Today's Progress</h2>
 
   <div class="stats">
+
     <div class="stat">
       <strong id="completed">0</strong>
       Exercises
@@ -207,11 +214,12 @@ button.secondary{
       <strong id="volumeTotal">0</strong>
       Volume
     </div>
+
   </div>
 
   <p id="progress"></p>
 
-  <button class="secondary" onclick="clearDay()">
+  <button class="secondary" onclick="clearToday()">
     Clear Today's Workout
   </button>
 </div>
@@ -230,6 +238,10 @@ button.secondary{
 </main>
 
 <script>
+
+/* =========================
+   WORKOUT PLANS
+========================= */
 
 const plans={
 
@@ -312,306 +324,641 @@ Sunday:{
 
 };
 
+
+/* =========================
+   STORAGE
+========================= */
+
 const key="shehuFitnessData";
 
 let data=JSON.parse(
   localStorage.getItem(key)||"{}"
 );
 
-let selected=new Date().toLocaleDateString(
-  "en-US",
-  {weekday:"long"}
-);
 
-if(!plans[selected] || selected==="Sunday"){
+/*
+Data structure:
+
+data = {
+  workouts:{
+    "2026-09-28":{
+      day:"Monday",
+      exercises:{
+        0:{
+          sets:3,
+          reps:10,
+          weight:20,
+          done:true
+        }
+      }
+    }
+  },
+
+  base:{
+    "Monday":{
+      0:{
+        sets:3,
+        reps:10,
+        weight:20
+      }
+    }
+  }
+}
+*/
+
+
+data.workouts??={};
+data.base??={};
+
+
+/* =========================
+   CURRENT DATE
+========================= */
+
+function getDateKey(){
+
+  const d=new Date();
+
+  const year=d.getFullYear();
+
+  const month=String(
+    d.getMonth()+1
+  ).padStart(2,"0");
+
+  const day=String(
+    d.getDate()
+  ).padStart(2,"0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+const today=getDateKey();
+
+
+/* =========================
+   CURRENT DAY
+========================= */
+
+let selected=
+  new Date().toLocaleDateString(
+    "en-US",
+    {weekday:"long"}
+  );
+
+
+if(
+  !plans[selected] ||
+  selected==="Sunday"
+){
   selected="Monday";
 }
 
 
-/* SAVE */
+/* =========================
+   SAVE
+========================= */
 
 function save(){
+
   localStorage.setItem(
     key,
     JSON.stringify(data)
   );
+
 }
 
 
-/* RENDER */
+/* =========================
+   GET TODAY'S WORKOUT
+========================= */
+
+function getTodayWorkout(){
+
+  data.workouts[today]??={
+    day:selected,
+    exercises:{}
+  };
+
+  return data.workouts[today];
+
+}
+
+
+/* =========================
+   RENDER
+========================= */
 
 function render(){
 
   const plan=plans[selected];
 
-  document.getElementById("dayTitle").textContent=
+  document.getElementById(
+    "dayTitle"
+  ).textContent=
     selected+" — "+plan.focus;
 
 
-  document.getElementById("days").innerHTML=
+  document.getElementById(
+    "days"
+  ).innerHTML=
+
     Object.keys(plans)
-    .filter(d=>d!=="Sunday")
+
+    .filter(
+      d=>d!=="Sunday"
+    )
+
     .map(d=>`
+
       <button
-        class="${d===selected?'':'secondary'}"
-        onclick="selected='${d}';render()">
+        class="${d===selected?"":"secondary"}"
+        onclick="changeDay('${d}')">
+
         ${d}
+
       </button>
+
     `)
+
     .join("");
 
 
-  const workout=data[selected]||{};
+  const workout=
+    getTodayWorkout();
 
 
-  document.getElementById("routine").innerHTML=
-    plan.ex.map((exercise,i)=>{
+  /*
+  If the selected day is today's day,
+  show today's actual workout.
 
-      const item=workout[i]||data.base?.[selected]?.[i]||{};
+  If another day is selected,
+  show that day's latest saved base
+  values as the starting values.
+  */
 
-      return`
+  const todayIsSelected=
+    workout.day===selected;
 
-      <div class="exercise">
 
-        <div class="exercise-top">
+  document.getElementById(
+    "routine"
+  ).innerHTML=
 
-          <input
-            type="checkbox"
-            ${item.done?"checked":""}
-            onchange="toggleExercise(${i})">
+    plan.ex.map(
+      (exercise,i)=>{
 
-          <b class="${item.done?'done':''}">
-            ${i+1}. ${exercise}
-          </b>
+        let item={};
+
+        if(
+          todayIsSelected &&
+          workout.exercises[i]
+        ){
+
+          item=
+            workout.exercises[i];
+
+        }
+        else{
+
+          item=
+            data.base?.[selected]?.[i]||{};
+
+        }
+
+
+        const previous=
+          data.base?.[selected]?.[i];
+
+
+        return`
+
+        <div class="exercise">
+
+          <div class="exercise-top">
+
+            <input
+              type="checkbox"
+
+              ${item.done?"checked":""}
+
+              onchange="
+                toggleExercise(${i})
+              "
+            >
+
+            <b
+              class="${item.done?"done":""}"
+            >
+              ${i+1}. ${exercise}
+            </b>
+
+          </div>
+
+
+          <div class="inputs">
+
+            <label>
+              Sets
+
+              <input
+                type="number"
+                min="0"
+
+                value="${item.sets??""}"
+
+                placeholder="3"
+
+                onchange="
+                  logExercise(
+                    ${i},
+                    'sets',
+                    this.value
+                  )
+                "
+              >
+            </label>
+
+
+            <label>
+              Reps
+
+              <input
+                type="number"
+                min="0"
+
+                value="${item.reps??""}"
+
+                placeholder="10"
+
+                onchange="
+                  logExercise(
+                    ${i},
+                    'reps',
+                    this.value
+                  )
+                "
+              >
+            </label>
+
+
+            <label>
+              Weight
+
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+
+                value="${item.weight??""}"
+
+                placeholder="kg"
+
+                onchange="
+                  logExercise(
+                    ${i},
+                    'weight',
+                    this.value
+                  )
+                "
+              >
+            </label>
+
+          </div>
+
+
+          ${
+            previous
+            ?
+            `
+            <div class="previous">
+              Previous base:
+              ${previous.sets||0} sets ×
+              ${previous.reps||0} reps ×
+              ${previous.weight||0} kg
+            </div>
+            `
+            :
+            ""
+          }
 
         </div>
 
-        <div class="inputs">
+        `;
 
-          <label>
-            Sets
-            <input
-              type="number"
-              min="0"
-              value="${item.sets||''}"
-              placeholder="3"
-              onchange="logExercise(${i},'sets',this.value)">
-          </label>
-
-          <label>
-            Reps
-            <input
-              type="number"
-              min="0"
-              value="${item.reps||''}"
-              placeholder="10"
-              onchange="logExercise(${i},'reps',this.value)">
-          </label>
-
-          <label>
-            Weight
-            <input
-              type="number"
-              min="0"
-              step="0.5"
-              value="${item.weight||''}"
-              placeholder="kg"
-              onchange="logExercise(${i},'weight',this.value)">
-          </label>
-
-        </div>
-
-      </div>
-
-      `;
-
-    }).join("");
+      }
+    ).join("");
 
 
   updateStats();
 
   renderHistory();
+
 }
 
 
-/* CHECK EXERCISE */
+/* =========================
+   CHANGE DAY
+========================= */
 
-function toggleExercise(i){
+function changeDay(day){
 
-  data[selected]??={};
-
-  data[selected][i]??={};
-
-  data[selected][i].done=
-    !data[selected][i].done;
-
-  save();
+  selected=day;
 
   render();
+
 }
 
-  
 
-/* LOG SETS / REPS / WEIGHT */
+/* =========================
+   LOG EXERCISE
+========================= */
 
-function logExercise(i,keyName,value){
+function logExercise(
+  i,
+  keyName,
+  value
+){
 
-  data[selected]??={};
+  const workout=
+    getTodayWorkout();
 
-  data[selected][i]??={};
 
-  data[selected][i][keyName]=
+  workout.day=
+    selected;
+
+
+  workout.exercises[i]??={};
+
+
+  workout.exercises[i][keyName]=
     Number(value)||0;
 
-  /* Save latest value as the new base value */
-  data.base??={};
+
+  /*
+  Save latest values as base values.
+  */
 
   data.base[selected]??={};
 
   data.base[selected][i]??={};
 
+
   data.base[selected][i][keyName]=
     Number(value)||0;
+
 
   save();
 
   updateStats();
 
   renderHistory();
-}
-  
 
-
-/* STATISTICS */
-
-function updateStats(){
-
-  const workout=data[selected]||{};
-
-  const exercises=
-    Object.values(workout);
-
-  const completed=
-    exercises.filter(x=>x.done).length;
-
-  const sets=
-    exercises.reduce(
-      (sum,x)=>sum+(Number(x.sets)||0),
-      0
-    );
-
-  const volume=
-    exercises.reduce(
-      (sum,x)=>
-        sum+
-        ((Number(x.sets)||0)*
-         (Number(x.reps)||0)*
-         (Number(x.weight)||0)),
-      0
-    );
-
-  document.getElementById("completed")
-    .textContent=completed;
-
-  document.getElementById("setsTotal")
-    .textContent=sets;
-
-  document.getElementById("volumeTotal")
-    .textContent=volume;
-
-  document.getElementById("progress")
-    .textContent=
-      `${completed}/${plans[selected].ex.length} exercises completed.`;
 }
 
 
-/* HISTORY */
+/* =========================
+   TOGGLE COMPLETE
+========================= */
 
-function renderHistory(){
+function toggleExercise(i){
 
-  const history=
-    document.getElementById("history");
-
-  const days=
-    Object.keys(data)
-    .filter(day=>plans[day]);
-
-  if(days.length===0){
-
-    history.innerHTML=
-      `<p class="small">
-        No workout history yet.
-      </p>`;
-
-    return;
-  }
+  const workout=
+    getTodayWorkout();
 
 
-  history.innerHTML=
-    days.map(day=>{
-
-      const workout=data[day]||{};
-
-      const completed=
-        Object.values(workout)
-        .filter(x=>x.done).length;
-
-      const sets=
-        Object.values(workout)
-        .reduce(
-          (sum,x)=>sum+(Number(x.sets)||0),
-          0
-        );
-
-      return`
-
-      <div class="history-item">
-
-        <b>${day}</b>
-
-        <div class="small">
-          ${plans[day].focus}
-          • ${completed} exercises
-          • ${sets} sets
-        </div>
-
-      </div>
-
-      `;
-
-    }).join("");
-}
+  workout.day=
+    selected;
 
 
-/* CLEAR TODAY */
+  workout.exercises[i]??={};
 
-function clearDay(){
 
-  delete data[selected];
+  workout.exercises[i].done=
+    !workout.exercises[i].done;
+
 
   save();
 
   render();
+
 }
 
 
-/* CLEAR HISTORY */
+/* =========================
+   STATISTICS
+========================= */
+
+function updateStats(){
+
+  const workout=
+    getTodayWorkout();
+
+
+  const exercises=
+    Object.values(
+      workout.exercises||{}
+    );
+
+
+  const completed=
+    exercises.filter(
+      x=>x.done
+    ).length;
+
+
+  const sets=
+    exercises.reduce(
+      (sum,x)=>
+        sum+
+        (Number(x.sets)||0),
+
+      0
+    );
+
+
+  const volume=
+    exercises.reduce(
+      (sum,x)=>
+
+        sum+
+
+        (
+          (Number(x.sets)||0)*
+          (Number(x.reps)||0)*
+          (Number(x.weight)||0)
+        ),
+
+      0
+    );
+
+
+  document.getElementById(
+    "completed"
+  ).textContent=
+    completed;
+
+
+  document.getElementById(
+    "setsTotal"
+  ).textContent=
+    sets;
+
+
+  document.getElementById(
+    "volumeTotal"
+  ).textContent=
+    volume;
+
+
+  document.getElementById(
+    "progress"
+  ).textContent=
+
+    `${completed}/${plans[selected].ex.length} exercises completed.`;
+
+}
+
+
+/* =========================
+   HISTORY
+========================= */
+
+function renderHistory(){
+
+  const history=
+    document.getElementById(
+      "history"
+    );
+
+
+  const workoutDates=
+    Object.keys(
+      data.workouts
+    );
+
+
+  if(
+    workoutDates.length===0
+  ){
+
+    history.innerHTML=
+      `
+      <p class="small">
+        No workout history yet.
+      </p>
+      `;
+
+    return;
+
+  }
+
+
+  workoutDates.sort().reverse();
+
+
+  history.innerHTML=
+
+    workoutDates.map(
+      date=>{
+
+        const workout=
+          data.workouts[date];
+
+
+        const exercises=
+          Object.values(
+            workout.exercises||{}
+          );
+
+
+        const completed=
+          exercises.filter(
+            x=>x.done
+          ).length;
+
+
+        const sets=
+          exercises.reduce(
+            (sum,x)=>
+              sum+
+              (Number(x.sets)||0),
+
+            0
+          );
+
+
+        return`
+
+        <div class="history-item">
+
+          <b>
+            ${date}
+          </b>
+
+          <div class="small">
+
+            ${workout.day||""}
+
+            • ${completed}
+            exercises
+
+            • ${sets}
+            sets
+
+          </div>
+
+        </div>
+
+        `;
+
+      }
+    ).join("");
+
+}
+
+
+/* =========================
+   CLEAR TODAY
+========================= */
+
+function clearToday(){
+
+  delete data.workouts[today];
+
+  save();
+
+  render();
+
+}
+
+
+/* =========================
+   CLEAR HISTORY
+========================= */
 
 function clearHistory(){
 
-  if(confirm("Clear all workout history?")){
+  if(
+    confirm(
+      "Clear all workout history?"
+    )
+  ){
 
-    data={};
+    data.workouts={};
 
     save();
 
     render();
 
   }
+
 }
 
 
-/* TIMER */
+/* =========================
+   TIMER
+========================= */
 
 let remaining=120;
 
@@ -620,45 +967,68 @@ let interval=null;
 
 function show(){
 
-  document.getElementById("timer")
-    .textContent=
-      `${String(Math.floor(remaining/60)).padStart(2,"0")}:${String(remaining%60).padStart(2,"0")}`;
+  document.getElementById(
+    "timer"
+  ).textContent=
+
+    `${String(
+      Math.floor(
+        remaining/60
+      )
+    ).padStart(2,"0")}:${String(
+      remaining%60
+    ).padStart(2,"0")}`;
 
 }
 
 
 function startTimer(){
 
-  if(interval)return;
+  if(interval)
+    return;
 
-  interval=setInterval(()=>{
 
-    remaining--;
+  interval=
+    setInterval(
+      ()=>{
 
-    show();
+        remaining--;
 
-    if(remaining<=0){
+        show();
 
-      clearInterval(interval);
 
-      interval=null;
+        if(
+          remaining<=0
+        ){
 
-      alert("Break finished!");
+          clearInterval(
+            interval
+          );
 
-      remaining=120;
+          interval=null;
 
-      show();
+          alert(
+            "Break finished!"
+          );
 
-    }
+          remaining=120;
 
-  },1000);
+          show();
+
+        }
+
+      },
+      1000
+    );
 
 }
 
 
 function resetTimer(){
 
-  clearInterval(interval);
+  clearInterval(
+    interval
+  );
 
   interval=null;
 
@@ -669,19 +1039,32 @@ function resetTimer(){
 }
 
 
-/* START */
+/* =========================
+   START APP
+========================= */
 
 render();
 
 show();
 
-</script>
 
-<script>
-if("serviceWorker" in navigator){
-  navigator.serviceWorker.register("./sw.js");
+/* =========================
+   SERVICE WORKER
+========================= */
+
+if(
+  "serviceWorker"
+  in navigator
+){
+
+  navigator.serviceWorker.register(
+    "./sw.js"
+  );
+
 }
+
 </script>
 
 </body>
+</html>y>
 </html>
