@@ -1,18 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="theme-color" content="#171717">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="manifest" href="manifest.webmanifest">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Shehu Fitness</title>
 
+<link rel="manifest" href="./manifest.webmanifest">
+
+<meta name="theme-color" content="#171717">
+
 <style>
+
+*{
+  box-sizing:border-box;
+}
+
 body{
-  font-family:system-ui,sans-serif;
   margin:0;
+  font-family:Arial,sans-serif;
   background:#f4f5f7;
   color:#171717;
 }
@@ -21,50 +27,45 @@ header{
   background:#171717;
   color:white;
   padding:20px;
+  text-align:center;
 }
 
 header h1{
-  margin:0 0 6px;
+  margin:0;
 }
 
-main{
-  max-width:900px;
+.container{
+  max-width:700px;
   margin:auto;
-  padding:16px;
+  padding:15px;
 }
 
-.card{
-  background:white;
-  border-radius:14px;
-  padding:16px;
-  margin:12px 0;
-  box-shadow:0 2px 8px #0001;
+.day-buttons{
+  display:flex;
+  gap:6px;
+  overflow-x:auto;
+  margin-bottom:15px;
 }
 
-button{
+.day-buttons button{
   border:0;
-  border-radius:10px;
-  padding:10px 14px;
-  margin:4px;
+  padding:10px 13px;
+  border-radius:8px;
+  background:#ddd;
+  white-space:nowrap;
+}
+
+.day-buttons button.active{
   background:#171717;
   color:white;
-  font-weight:600;
-}
-
-button.secondary{
-  background:#e7e7e7;
-  color:#111;
-}
-
-.grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(110px,1fr));
-  gap:8px;
 }
 
 .exercise{
-  padding:14px 0;
-  border-bottom:1px solid #eee;
+  background:white;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:12px;
+  box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
 
 .exercise-top{
@@ -73,241 +74,186 @@ button.secondary{
   gap:10px;
 }
 
-.exercise input[type=checkbox]{
+.exercise-top input[type="checkbox"]{
   width:20px;
   height:20px;
 }
 
+.exercise-name{
+  font-weight:bold;
+  font-size:17px;
+}
+
 .inputs{
   display:grid;
-  grid-template-columns:1fr 1fr 1fr;
+  grid-template-columns:repeat(3,1fr);
   gap:8px;
-  margin-top:10px;
+  margin-top:12px;
 }
 
 .inputs label{
   font-size:12px;
-  color:#666;
 }
 
 .inputs input{
   width:100%;
-  box-sizing:border-box;
-  padding:8px;
+  padding:9px;
+  margin-top:4px;
   border:1px solid #ccc;
   border-radius:7px;
-  margin-top:3px;
-}
-
-.done{
-  text-decoration:line-through;
-  color:#777;
-}
-
-.timer{
-  font-size:40px;
-  font-weight:800;
-  text-align:center;
-  margin:12px;
-}
-
-.small{
-  color:#666;
-  font-size:14px;
-}
-
-.stats{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:8px;
-  text-align:center;
-}
-
-.stat{
-  background:#f4f5f7;
-  padding:12px 5px;
-  border-radius:10px;
-}
-
-.stat strong{
-  display:block;
-  font-size:24px;
-}
-
-.history-item{
-  padding:10px 0;
-  border-bottom:1px solid #eee;
 }
 
 .previous{
-  margin-top:6px;
   font-size:12px;
-  color:#666;
+  color:#777;
+  margin-top:8px;
 }
 
-@media(max-width:500px){
-  .inputs{
-    grid-template-columns:1fr 1fr;
-  }
-
-  .stats{
-    grid-template-columns:1fr 1fr;
-  }
+.stats{
+  background:white;
+  border-radius:12px;
+  padding:15px;
+  margin-top:15px;
 }
+
+.timer{
+  text-align:center;
+  background:white;
+  border-radius:12px;
+  padding:15px;
+  margin-bottom:15px;
+}
+
+#timerDisplay{
+  font-size:35px;
+  font-weight:bold;
+  margin:10px;
+}
+
+.timer button,
+.clear-btn{
+  border:0;
+  border-radius:8px;
+  padding:10px 15px;
+  margin:4px;
+  background:#171717;
+  color:white;
+}
+
+.clear-btn{
+  background:#b00020;
+  margin-top:15px;
+}
+
+.history{
+  margin-top:15px;
+}
+
+.history-item{
+  background:white;
+  padding:12px;
+  border-radius:10px;
+  margin-bottom:8px;
+}
+
+.empty{
+  color:#777;
+  font-size:14px;
+}
+
 </style>
 </head>
 
 <body>
 
 <header>
-  <h1>🏋️ Shehu Fitness</h1>
-  <div>Monday–Saturday • 6:00–8:00 PM</div>
+  <h1>Shehu Fitness</h1>
 </header>
 
-<main>
+<div class="container">
 
-<!-- DAY SELECTOR -->
-<div class="card">
-  <h2 id="dayTitle"></h2>
-  <div class="grid" id="days"></div>
-</div>
+  <div class="day-buttons" id="dayButtons"></div>
 
-<!-- TIMER -->
-<div class="card">
-  <h2>⏱️ Workout Timer</h2>
+  <div class="timer">
+    <h3>Rest Timer</h3>
+    <div id="timerDisplay">02:00</div>
 
-  <div class="timer" id="timer">02:00</div>
-
-  <div style="text-align:center">
     <button onclick="startTimer()">Start</button>
-    <button class="secondary" onclick="resetTimer()">Reset</button>
+    <button onclick="resetTimer()">Reset</button>
   </div>
 
-  <div class="small" style="text-align:center">
-    Use for your 2-minute breaks.
-  </div>
-</div>
-
-<!-- WORKOUT -->
-<div class="card">
-  <h2>Exercises</h2>
-  <div id="routine"></div>
-</div>
-
-<!-- TODAY'S PROGRESS -->
-<div class="card">
-  <h2>📊 Today's Progress</h2>
+  <div id="workout"></div>
 
   <div class="stats">
-
-    <div class="stat">
-      <strong id="completed">0</strong>
-      Exercises
-    </div>
-
-    <div class="stat">
-      <strong id="setsTotal">0</strong>
-      Sets
-    </div>
-
-    <div class="stat">
-      <strong id="volumeTotal">0</strong>
-      Volume
-    </div>
-
+    <h3>Today's Progress</h3>
+    <div id="stats"></div>
   </div>
 
-  <p id="progress"></p>
-
-  <button class="secondary" onclick="clearToday()">
+  <button class="clear-btn" onclick="clearToday()">
     Clear Today's Workout
   </button>
+
+  <div class="history">
+    <h3>Workout History</h3>
+    <div id="history"></div>
+  </div>
+
 </div>
-
-<!-- HISTORY -->
-<div class="card">
-  <h2>📅 Workout History</h2>
-
-  <div id="history"></div>
-
-  <button class="secondary" onclick="clearHistory()">
-    Clear History
-  </button>
-</div>
-
-</main>
 
 <script>
 
 /* =========================
-   WORKOUT PLANS
+   WORKOUT PLAN
 ========================= */
 
 const plans={
 
-Monday:{
-  focus:"Lower Body",
-  ex:[
+  Monday:[
     "Leg Press",
     "Leg Extension",
     "Leg Curl",
     "Goblet Squat",
     "Calf Raise",
     "Deadlift"
-  ]
-},
+  ],
 
-Tuesday:{
-  focus:"Upper Body",
-  ex:[
+  Tuesday:[
     "Lat Pulldown",
     "Bench Press",
     "Shoulder Press",
     "Lateral Raise",
     "Biceps Curl",
     "Triceps Pushdown"
-  ]
-},
+  ],
 
-Wednesday:{
-  focus:"Back + Rear Shoulders",
-  ex:[
+  Wednesday:[
     "Pull-ups",
     "Lat Pulldown",
     "Straight-Arm Cable Pulldown",
     "Face Pulls",
     "Dumbbell Rear-Delt Raises",
     "Dumbbell Pullover"
-  ]
-},
+  ],
 
-Thursday:{
-  focus:"Lower Body",
-  ex:[
+  Thursday:[
     "Leg Press",
     "Romanian Deadlift",
     "Leg Curl",
     "Leg Extension",
     "Hip Thrust",
     "Calf Raise"
-  ]
-},
+  ],
 
-Friday:{
-  focus:"Upper Body",
-  ex:[
+  Friday:[
     "Lat Pulldown",
     "Bench Press",
     "Dumbbell Pullover",
     "Lateral Raise",
     "Biceps Curl",
     "Triceps Pushdown"
-  ]
-},
+  ],
 
-Saturday:{
-  focus:"Full Body",
-  ex:[
+  Saturday:[
     "Leg Press",
     "Bench Press",
     "Lat Pulldown",
@@ -315,12 +261,6 @@ Saturday:{
     "Biceps Curl",
     "Triceps Pushdown"
   ]
-},
-
-Sunday:{
-  focus:"Rest",
-  ex:[]
-}
 
 };
 
@@ -329,83 +269,41 @@ Sunday:{
    STORAGE
 ========================= */
 
-const key="shehuFitnessData";
+let data=
+  JSON.parse(
+    localStorage.getItem("shehuFitnessData")
+  ) || {};
 
-let data=JSON.parse(
-  localStorage.getItem(key)||"{}"
-);
-
-
-/*
-Data structure:
-
-data = {
-  workouts:{
-    "2026-09-28":{
-      day:"Monday",
-      exercises:{
-        0:{
-          sets:3,
-          reps:10,
-          weight:20,
-          done:true
-        }
-      }
-    }
-  },
-
-  base:{
-    "Monday":{
-      0:{
-        sets:3,
-        reps:10,
-        weight:20
-      }
-    }
-  }
-}
-*/
-
-
-data.workouts??={};
-data.base??={};
+data.workouts ??={};
+data.base ??={};
 
 
 /* =========================
-   CURRENT DATE
+   DATE
 ========================= */
 
 function getDateKey(){
 
-  const d=new Date();
+  return new Date()
+    .toISOString()
+    .split("T")[0];
 
-  const year=d.getFullYear();
-
-  const month=String(
-    d.getMonth()+1
-  ).padStart(2,"0");
-
-  const day=String(
-    d.getDate()
-  ).padStart(2,"0");
-
-  return `${year}-${month}-${day}`;
 }
-
 
 const today=getDateKey();
 
-
-/* =========================
-   CURRENT DAY
-========================= */
-
-let selected=
+const todayDay=
   new Date().toLocaleDateString(
     "en-US",
     {weekday:"long"}
   );
 
+
+/* =========================
+   SELECTED DAY
+========================= */
+
+let selected=todayDay;
 
 if(
   !plans[selected] ||
@@ -422,7 +320,7 @@ if(
 function save(){
 
   localStorage.setItem(
-    key,
+    "shehuFitnessData",
     JSON.stringify(data)
   );
 
@@ -430,14 +328,17 @@ function save(){
 
 
 /* =========================
-   GET TODAY'S WORKOUT
+   TODAY'S WORKOUT
 ========================= */
 
 function getTodayWorkout(){
 
-  data.workouts[today]??={
-    day:selected,
+  data.workouts[today] ??={
+
+    day:todayDay,
+
     exercises:{}
+
   };
 
   return data.workouts[today];
@@ -446,226 +347,206 @@ function getTodayWorkout(){
 
 
 /* =========================
-   RENDER
+   DAY BUTTONS
 ========================= */
 
-function render(){
+function renderDays(){
 
-  const plan=plans[selected];
+  const box=
+    document.getElementById("dayButtons");
 
-  document.getElementById(
-    "dayTitle"
-  ).textContent=
-    selected+" — "+plan.focus;
+  box.innerHTML="";
 
+  Object.keys(plans).forEach(day=>{
 
-  document.getElementById(
-    "days"
-  ).innerHTML=
+    const button=
+      document.createElement("button");
 
-    Object.keys(plans)
+    button.textContent=day;
 
-    .filter(
-      d=>d!=="Sunday"
-    )
+    if(day===selected){
 
-    .map(d=>`
+      button.classList.add("active");
 
-      <button
-        class="${d===selected?"":"secondary"}"
-        onclick="changeDay('${d}')">
+    }
 
-        ${d}
+    button.onclick=()=>{
 
-      </button>
+      selected=day;
 
-    `)
+      render();
 
-    .join("");
+    };
 
+    box.appendChild(button);
 
-  const workout=
-    getTodayWorkout();
-
-
-  /*
-  If the selected day is today's day,
-  show today's actual workout.
-
-  If another day is selected,
-  show that day's latest saved base
-  values as the starting values.
-  */
-
-  const todayIsSelected=
-    workout.day===selected;
-
-
-  document.getElementById(
-    "routine"
-  ).innerHTML=
-
-    plan.ex.map(
-      (exercise,i)=>{
-
-        let item={};
-
-        if(
-          todayIsSelected &&
-          workout.exercises[i]
-        ){
-
-          item=
-            workout.exercises[i];
-
-        }
-        else{
-
-          item=
-            data.base?.[selected]?.[i]||{};
-
-        }
-
-
-        const previous=
-          data.base?.[selected]?.[i];
-
-
-        return`
-
-        <div class="exercise">
-
-          <div class="exercise-top">
-
-            <input
-              type="checkbox"
-
-              ${item.done?"checked":""}
-
-              onchange="
-                toggleExercise(${i})
-              "
-            >
-
-            <b
-              class="${item.done?"done":""}"
-            >
-              ${i+1}. ${exercise}
-            </b>
-
-          </div>
-
-
-          <div class="inputs">
-
-            <label>
-              Sets
-
-              <input
-                type="number"
-                min="0"
-
-                value="${item.sets??""}"
-
-                placeholder="3"
-
-                onchange="
-                  logExercise(
-                    ${i},
-                    'sets',
-                    this.value
-                  )
-                "
-              >
-            </label>
-
-
-            <label>
-              Reps
-
-              <input
-                type="number"
-                min="0"
-
-                value="${item.reps??""}"
-
-                placeholder="10"
-
-                onchange="
-                  logExercise(
-                    ${i},
-                    'reps',
-                    this.value
-                  )
-                "
-              >
-            </label>
-
-
-            <label>
-              Weight
-
-              <input
-                type="number"
-                min="0"
-                step="0.5"
-
-                value="${item.weight??""}"
-
-                placeholder="kg"
-
-                onchange="
-                  logExercise(
-                    ${i},
-                    'weight',
-                    this.value
-                  )
-                "
-              >
-            </label>
-
-          </div>
-
-
-          ${
-            previous
-            ?
-            `
-            <div class="previous">
-              Previous base:
-              ${previous.sets||0} sets ×
-              ${previous.reps||0} reps ×
-              ${previous.weight||0} kg
-            </div>
-            `
-            :
-            ""
-          }
-
-        </div>
-
-        `;
-
-      }
-    ).join("");
-
-
-  updateStats();
-
-  renderHistory();
+  });
 
 }
 
 
 /* =========================
-   CHANGE DAY
+   RENDER WORKOUT
 ========================= */
 
-function changeDay(day){
+function render(){
 
-  selected=day;
+  renderDays();
 
-  render();
+  const box=
+    document.getElementById("workout");
+
+  box.innerHTML="";
+
+  const workout=
+    selected===todayDay
+      ? getTodayWorkout()
+      : null;
+
+  const isToday=
+    selected===todayDay &&
+    selected!=="Sunday";
+
+  plans[selected].forEach((exercise,i)=>{
+
+    let item={};
+
+    /*
+      If this is today's workout,
+      show today's actual values.
+
+      Otherwise show the saved base values.
+    */
+
+    if(
+      isToday &&
+      workout.exercises[i]
+    ){
+
+      item=workout.exercises[i];
+
+    }else{
+
+      item=
+        data.base?.[selected]?.[i]
+        || {};
+
+    }
+
+    const base=
+      data.base?.[selected]?.[i]
+      || {};
+
+    const checked=
+      isToday && item.done
+        ? "checked"
+        : "";
+
+    const disabled=
+      isToday
+        ? ""
+        : "disabled";
+
+    box.innerHTML+=`
+
+      <div class="exercise">
+
+        <div class="exercise-top">
+
+          <input
+            type="checkbox"
+            ${checked}
+            ${disabled}
+            onchange="toggleExercise(${i})"
+          >
+
+          <div class="exercise-name">
+            ${exercise}
+          </div>
+
+        </div>
+
+        <div class="inputs">
+
+          <label>
+            Sets
+            <input
+              type="number"
+              min="0"
+              value="${item.sets ?? ""}"
+              onchange="
+                logExercise(
+                  ${i},
+                  'sets',
+                  this.value
+                )
+              "
+            >
+          </label>
+
+          <label>
+            Reps
+            <input
+              type="number"
+              min="0"
+              value="${item.reps ?? ""}"
+              onchange="
+                logExercise(
+                  ${i},
+                  'reps',
+                  this.value
+                )
+              "
+            >
+          </label>
+
+          <label>
+            Weight
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value="${item.weight ?? ""}"
+              onchange="
+                logExercise(
+                  ${i},
+                  'weight',
+                  this.value
+                )
+              "
+            >
+          </label>
+
+        </div>
+
+        ${
+          base.sets !== undefined ||
+          base.reps !== undefined ||
+          base.weight !== undefined
+          ?
+          `
+          <div class="previous">
+
+            Base:
+            ${base.sets ?? "-"} sets ×
+            ${base.reps ?? "-"} reps ×
+            ${base.weight ?? "-"} kg
+
+          </div>
+          `
+          :
+          ""
+        }
+
+      </div>
+
+    `;
+
+  });
+
+  updateStats();
+
+  renderHistory();
 
 }
 
@@ -680,63 +561,40 @@ function logExercise(
   value
 ){
 
-  const workout=
-    getTodayWorkout();
-
-
-  workout.day=
-    selected;
-
-
-  workout.exercises[i]??={};
-
-
-  workout.exercises[i][keyName]=
+  const num=
     Number(value)||0;
+
+  /*
+    Save the latest value as
+    the new base value.
+  */
+
+  data.base[selected] ??={};
+
+  data.base[selected][i] ??={};
+
+  data.base[selected][i][keyName]=num;
 
 
   /*
-  Save latest values as base values.
+    Only save it to today's
+    actual workout when the
+    selected day is today.
   */
 
-  data.base[selected]??={};
+  if(
+    selected===todayDay &&
+    selected!=="Sunday"
+  ){
 
-  data.base[selected][i]??={};
+    const workout=
+      getTodayWorkout();
 
+    workout.exercises[i] ??={};
 
-  data.base[selected][i][keyName]=
-    Number(value)||0;
+    workout.exercises[i][keyName]=num;
 
-
-  save();
-
-  updateStats();
-
-  renderHistory();
-
-}
-
-
-/* =========================
-   TOGGLE COMPLETE
-========================= */
-
-function toggleExercise(i){
-
-  const workout=
-    getTodayWorkout();
-
-
-  workout.day=
-    selected;
-
-
-  workout.exercises[i]??={};
-
-
-  workout.exercises[i].done=
-    !workout.exercises[i].done;
-
+  }
 
   save();
 
@@ -746,76 +604,85 @@ function toggleExercise(i){
 
 
 /* =========================
-   STATISTICS
+   TOGGLE COMPLETION
 ========================= */
 
-function updateStats(){
+function toggleExercise(i){
+
+  /*
+    Completion belongs only
+    to the actual workout today.
+  */
+
+  if(
+    selected!==todayDay ||
+    selected==="Sunday"
+  ){
+
+    return;
+
+  }
 
   const workout=
     getTodayWorkout();
 
+  workout.exercises[i] ??={};
+
+  workout.exercises[i].done=
+    !workout.exercises[i].done;
+
+  save();
+
+  render();
+
+}
+
+
+/* =========================
+   TODAY'S PROGRESS
+========================= */
+
+function updateStats(){
+
+  const stats=
+    document.getElementById("stats");
+
+  if(
+    selected!==todayDay ||
+    selected==="Sunday"
+  ){
+
+    stats.innerHTML=
+      "Select today's workout to view progress.";
+
+    return;
+
+  }
+
+  const workout=
+    data.workouts[today];
 
   const exercises=
     Object.values(
-      workout.exercises||{}
+      workout?.exercises || {}
     );
-
 
   const completed=
     exercises.filter(
-      x=>x.done
+      e=>e.done
     ).length;
 
+  const total=
+    plans[todayDay]?.length || 0;
 
-  const sets=
-    exercises.reduce(
-      (sum,x)=>
-        sum+
-        (Number(x.sets)||0),
+  stats.innerHTML=`
 
-      0
-    );
+    <strong>
+      ${completed} / ${total}
+    </strong>
+    exercises completed
 
-
-  const volume=
-    exercises.reduce(
-      (sum,x)=>
-
-        sum+
-
-        (
-          (Number(x.sets)||0)*
-          (Number(x.reps)||0)*
-          (Number(x.weight)||0)
-        ),
-
-      0
-    );
-
-
-  document.getElementById(
-    "completed"
-  ).textContent=
-    completed;
-
-
-  document.getElementById(
-    "setsTotal"
-  ).textContent=
-    sets;
-
-
-  document.getElementById(
-    "volumeTotal"
-  ).textContent=
-    volume;
-
-
-  document.getElementById(
-    "progress"
-  ).textContent=
-
-    `${completed}/${plans[selected].ex.length} exercises completed.`;
+  `;
 
 }
 
@@ -826,94 +693,62 @@ function updateStats(){
 
 function renderHistory(){
 
-  const history=
-    document.getElementById(
-      "history"
-    );
+  const box=
+    document.getElementById("history");
 
+  box.innerHTML="";
 
-  const workoutDates=
-    Object.keys(
-      data.workouts
-    );
+  const dates=
+    Object.keys(data.workouts)
+    .sort()
+    .reverse();
 
+  if(!dates.length){
 
-  if(
-    workoutDates.length===0
-  ){
-
-    history.innerHTML=
-      `
-      <p class="small">
+    box.innerHTML=
+      `<div class="empty">
         No workout history yet.
-      </p>
-      `;
+      </div>`;
 
     return;
 
   }
 
+  dates.forEach(date=>{
 
-  workoutDates.sort().reverse();
+    const workout=
+      data.workouts[date];
 
+    const completed=
+      Object.values(
+        workout.exercises || {}
+      ).filter(
+        e=>e.done
+      ).length;
 
-  history.innerHTML=
+    const total=
+      plans[workout.day]?.length || 0;
 
-    workoutDates.map(
-      date=>{
+    box.innerHTML+=`
 
-        const workout=
-          data.workouts[date];
+      <div class="history-item">
 
+        <strong>${date}</strong>
 
-        const exercises=
-          Object.values(
-            workout.exercises||{}
-          );
+        <br>
 
+        ${workout.day || ""}
 
-        const completed=
-          exercises.filter(
-            x=>x.done
-          ).length;
+        <br>
 
+        ${completed} / ${total}
+        exercises completed
 
-        const sets=
-          exercises.reduce(
-            (sum,x)=>
-              sum+
-              (Number(x.sets)||0),
+      </div>
 
-            0
-          );
+    `;
 
-
-        return`
-
-        <div class="history-item">
-
-          <b>
-            ${date}
-          </b>
-
-          <div class="small">
-
-            ${workout.day||""}
-
-            • ${completed}
-            exercises
-
-            • ${sets}
-            sets
-
-          </div>
-
-        </div>
-
-        `;
-
-      }
-    ).join("");
+  });
 
 }
 
@@ -923,6 +758,16 @@ function renderHistory(){
 ========================= */
 
 function clearToday(){
+
+  if(
+    !confirm(
+      "Clear today's workout?"
+    )
+  ){
+
+    return;
+
+  }
 
   delete data.workouts[today];
 
@@ -934,107 +779,82 @@ function clearToday(){
 
 
 /* =========================
-   CLEAR HISTORY
+   REST TIMER
 ========================= */
 
-function clearHistory(){
+let timer=120;
 
-  if(
-    confirm(
-      "Clear all workout history?"
-    )
-  ){
-
-    data.workouts={};
-
-    save();
-
-    render();
-
-  }
-
-}
+let timerInterval=null;
 
 
-/* =========================
-   TIMER
-========================= */
+function updateTimerDisplay(){
 
-let remaining=120;
+  const minutes=
+    Math.floor(timer/60)
+    .toString()
+    .padStart(2,"0");
 
-let interval=null;
-
-
-function show(){
+  const seconds=
+    (timer%60)
+    .toString()
+    .padStart(2,"0");
 
   document.getElementById(
-    "timer"
+    "timerDisplay"
   ).textContent=
-
-    `${String(
-      Math.floor(
-        remaining/60
-      )
-    ).padStart(2,"0")}:${String(
-      remaining%60
-    ).padStart(2,"0")}`;
+    `${minutes}:${seconds}`;
 
 }
 
 
 function startTimer(){
 
-  if(interval)
-    return;
+  if(timerInterval) return;
 
+  timerInterval=
+    setInterval(()=>{
 
-  interval=
-    setInterval(
-      ()=>{
+      if(timer<=0){
 
-        remaining--;
+        clearInterval(timerInterval);
 
-        show();
+        timerInterval=null;
 
+        return;
 
-        if(
-          remaining<=0
-        ){
+      }
 
-          clearInterval(
-            interval
-          );
+      timer--;
 
-          interval=null;
+      updateTimerDisplay();
 
-          alert(
-            "Break finished!"
-          );
-
-          remaining=120;
-
-          show();
-
-        }
-
-      },
-      1000
-    );
+    },1000);
 
 }
 
 
 function resetTimer(){
 
-  clearInterval(
-    interval
+  clearInterval(timerInterval);
+
+  timerInterval=null;
+
+  timer=120;
+
+  updateTimerDisplay();
+
+}
+
+
+/* =========================
+   SERVICE WORKER
+========================= */
+
+if("serviceWorker" in navigator){
+
+  navigator.serviceWorker.register(
+    "./sw.js"
   );
-
-  interval=null;
-
-  remaining=120;
-
-  show();
 
 }
 
@@ -1043,28 +863,11 @@ function resetTimer(){
    START APP
 ========================= */
 
+updateTimerDisplay();
+
 render();
-
-show();
-
-
-/* =========================
-   SERVICE WORKER
-========================= */
-
-if(
-  "serviceWorker"
-  in navigator
-){
-
-  navigator.serviceWorker.register(
-    "./sw.js"
-  );
-
-}
 
 </script>
 
 </body>
-</html>y>
 </html>
